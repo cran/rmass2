@@ -1,0 +1,8 @@
+4c917ba3820d2562985a1e78531ed054 *DESCRIPTION
+6b939c881030dbd887e07233a1945c3d *NAMESPACE
+48d8db37584bd2eb71b5c324b22c08cf *NEWS.md
+3c07db2803361f98c42805a3ea496bbb *R/functions.R
+f94a2cd4fdfb109627db7d0da900733e *R/rmass2.R
+7def0dc0be57f53dca108861f4109643 *man/rmass2.Rd
+839afc5a1053446c4a6931505f6b3d1c *tests/testthat.R
+d34d57f82ae1e156fb594850d28fc2ff *tests/testthat/test-package-rmass2.R
