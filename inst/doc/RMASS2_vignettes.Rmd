@@ -1,0 +1,115 @@
+---
+title: "The RMASS2 Package: Repeated Measures with Attrition: Sample Sizes and Power Levels"
+author: "Yiheng Wei^[Committee on Computational and Applied Mathematics, University of Chicago], Soumya Sahu^[School of Public Health, University of Illinois Chicago], Donald Hedeker^[Department of Public Health Sciences, University of Chicago]"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The RMASS2 Package: Repeated Measures with Attrition: Sample Sizes and Power Levels}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview 
+
+The package RMASS2 utilizes a longitudinal design that accommodates subject attrition, enabling the estimation of sample sizes based on specified levels of statistical power for significance tests. Conversely, it can also estimate the power levels for significance tests based on different sample sizes set by the user. The package  assumes that there are two independent groups, and interest is in comparing these groups across time in terms of a continuous normally-distributed dependent variable. It allows for the modification of attrition rates, expected group differences over time, effect sizes, and covariance structure, which influence the estimated sample sizes and power levels. In this tutorial, we will provide examples of utilizing this package to estimate sample sizes and power levels for two groups.
+
+## Sample Size Estimation
+
+Firstly, we will demonstrate how to estimate the sample size. To simplify the scenario, we will use many of the default parameter settings, and we will consider two groups, each with two timepoints. For this illustration, we will assume an attrition rate of 0.2 between the first and second timepoints. Our objective is to attain a significance level (alpha level) of 0.050 and a power level of 0.900 (which are the default values for these) in our two-sided statistical test for these two groups. The following code uses a list to specify the attrition rates between the 1st and 2nd timepoints, and the subsequently generated outcome is shown below.
+
+```{r}
+library(rmass2)
+output <- rmass2(attrit = c(0.2))
+```
+
+The first output block is the correlation matrix of the repeated outcome across time. This matrix is decided by the chosen correlation structure (referred to as "ctype") and the correlation values (referred to as "corr"). By default, the correlation structure is set to 1, signifying an equal correlation structure. Additionally, the default correlation value is 0.5, representing the assumed equal correlation among all pairs of observations.
+
+The second output block includes the previously assumed number of timepoints, along with the default values for the alpha level, power level, and the sample size ratio between group 1 and group 2. It's important to note that two power levels are provided: one without accounting for attrition and another considering attrition. This particular function is intended for power level estimation. When estimating sample sizes, these two power level values will be identical, representing the power level used for sample size calculations.
+
+In the third output block, one parameter we configure is the retention rate, which is derived from the attrition rate. Given that we've specified an attrition rate of 0.2 between the 1st and 2nd timepoints, the corresponding retention rate will be calculated as 1 - 0.2 = 0.8 for the second timepoint.
+
+The effect sizes and standard deviations are maintained at their default values: a constant effect size structure with each timepoint set to 0.5, and a constant standard deviation for each timepoint at 1.
+
+The contrasts employed for statistical tests across time are dependent on the chosen effect size. If the effect size type is constant (estype = 0), the contrasts across time will be established as a constant unit vector. In cases where the effect size type is linear (estype = 1), the contrasts across time will be aligned with a linear unit vector.  This specification is useful for group-by linear time interactions. In scenarios where a user-defined effect size type is selected (estype = 2), the contrasts will be uniformly set as 1 for all timepoints, since
+the user will provide the expected effect sizes at each timepoint. Since the effect size is the mean difference between the two groups, divided by the common standard deviation, the mean difference across time is computed by multiplying the effect size with the standard deviation.
+
+The following blocks will output the composite mean difference, the composite variances, the composite effect sizes, and estimated sample sizes. They are calculated by the above parameters provided.  For more details on estimation formulas used, please refer to Hedeker, Gibbons, \& Waternaux (1999). 
+
+The estimated sample sizes are presented in two scenarios: one without accounting for attrition, where the attrition rate between each pair of timepoints is presumed to be zero. In the second scenario, which considers attrition, the program will utilize the attrition rate values input by the users.
+
+The outcomes indicate that in order to attain the designated statistical power, it is advised to gather a minimum of 63 subjects for both group one and group two, assuming attrition is not taken into account. On the other hand, if attrition is considered, the recommendation is to sample at least 70.8 individuals, which should be rounded up to 71, for both group 1 and group 2. And due to attrition, only around 56.6 subjects will remain for the second timepoint.
+
+RMASS2 can also return a list which allows users to extract some arguments. 
+
+```{r}
+str(output)
+```
+
+For example, we can extract the estimated sample size for the first group at the first timepoint.
+
+```{r}
+output$N11
+```
+
+Please refer to the description document of this package for more detailed information on the arguments that can be extracted.
+
+## Power Level Estimation
+
+Next, we will consider how to estimate the power level. Suppose we intend to determine the power level corresponding to a group one size of 100. The code to achieve this is as follows. 
+
+```{r}
+rmass2(mode = 2, attrit = c(0.2))
+```
+
+The output presents the computed sample sizes based on the provided input values for parameters "N11" (number of subjects in group 1 at the first timepoint), "ratio" (ratio of group sample sizes), and "attrit" (amount of attrition across time). The estimated power levels are displayed in the second output block: 0.983 when attrition is not taken into consideration, and 0.971 when attrition is accounted for. The remaining output blocks are determined using the same methodology as previously described.
+
+## Other Options
+
+In this section, we offer a tutorial on modifying the default settings to accommodate other scenarios.
+
+### Ratio of Group 1 to Group 2
+
+In many instances, the ratio of group one to group two is not precisely one. In such cases, you can adjust the "ratio" parameter accordingly. To illustrate, let's consider a scenario where the ratio of group one to group two is 1.1. By making this adjustment, the estimated sample sizes for both groups will be altered.
+
+```{r}
+rmass2(ratio = 1.1, attrit = c(0.2))
+```
+
+### Correlation Structure across Time
+
+Within the program, users have access to three correlation structure options across time: equal correlations for all pairs of timepoints, AR1 structure, or a toeplitz (banded) correlation matrix. To tailor the correlation structure, the "ctype" parameter can be adjusted. Additionally, the "corr" parameter can be utilized to specify correlation value(s).  For equal, this would be the value of all pairwise correlations.  For AR1, this would be the correlation for the first lag in the correlation matrix.  For toeplitz, this would be the values of the correlation for each lag. Here's an example demonstrating how to configure a toeplitz structure with 4 timepoints and lagged correlations of 0.8, 0.5, and 0.5.  We also specify attrition rates of 0.2 (between timepoints 1 and 2), 0.1 (between timepoints 2 and 3), and 0.1 (between timepoints 3 and 4).   With these specifications, the package returns the estimated sample sizes.
+
+Notice that without attrition, one would only need 62 subjects per group, however with the posited attrition rates, 80 subjects per group would be necessary at the first timepoint. 
+
+```{r}
+rmass2(n = 4, attrit = c(0.2, 0.1, 0.1), ctype = 3, corr = c(0.8, 0.5, 0.5))
+```
+
+### Heterogeneity
+
+By default, our program assumes consistent standard deviations across different timepoints, setting them to a value of 1. However, it could be that the standard deviations change across time, which is known as the heterogeneous case. To address this, users can adjust the "sigma" parameter accordingly. Here's an example that illustrates how to implement this in practice for a two timepoint situation.  
+
+```{r}
+rmass2(attrit = c(0.2), sigma = c(1, 2))
+```
+
+### Effect Sizes across Time
+
+As mentioned, effect sizes are computed as the mean difference divided by a common standard deviation. Our program furnishes three effect size structure options: constant, linear, and user-defined. To modify the effect size structure, users can manipulate the "estype" parameter, and to assign numerical values, the "es" parameter can be employed. Here's an example illustrating the process of configuring linear effect sizes, with a value of 0.5 designated for the last timepoint (effect size starts at 0 and linearly changes to 0.5 across the 4 timepoints). 
+
+```{r}
+rmass2(n = 4, attrit = c(0.2, 0.1, 0.1), estype = 1)
+```
+
+## References
+D. Hedeker, R. D. Gibbons, and C. Waternaux. Sample size estimation for longitu-
+dinal designs with attrition: comparing time-related contrasts between two groups.
+*Journal of Educational and Behavioral Statistics*, 24(1):70–93, 1999.
+

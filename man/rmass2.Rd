@@ -4,8 +4,8 @@
 \alias{rmass2}
 \title{Repeated Measures with Attrition: Sample Sizes for 2 Groups}
 \usage{
-rmass2(mode = 1, n = 2, N11 = 100, alpha = 0.05,
-nside = 2, beta = 0.9, ratio = 1,
+rmass2(mode = 1, n = 2, N11 = NULL, alpha = 0.05,
+nside = 2, power = NULL, ratio = 1,
 attrit = 0, estype = 0, es = 0.5,
 ctype = 1, corr = 0.5, sigma = rep(1, n))
 }
@@ -26,9 +26,9 @@ If the mode = 2, N11 is required to estimate the power level.
 
 \item{nside}{an optional integer indicating 1- or 2-sided test. Should be 1 or 2. (default=2)}
 
-\item{beta}{an optional numerical value giving the level of power. Should be a numeric value between 0 and 1.
-If mode = 1, beta is required to estimate the sample size.
-If mode = 2, beta is not necessary and any value entered for beta will not be used to calculate the power level.
+\item{power}{an optional numerical value giving the level of power. Should be a numeric value between 0 and 1.
+If mode = 1, power is required to estimate the sample size.
+If mode = 2, power is not necessary and any value entered for power will not be used to calculate the power level.
 (default=0.9)}
 
 \item{ratio}{an optional numerical value giving the ratio of sample sizes of group 1 to group 2. (default=1)}
@@ -51,11 +51,11 @@ If ctype = 2, a numerical value of first-lag correlation is given.
 If ctype = 3, a vector of n-1 lag correlations is given.
 (default=0.5)}
 
-\item{sigma}{an optional vector of size n giving the standard deviation for each timepoint.
+\item{sigma}{an optional vector of size n giving the variance for each timepoint.
 (default: sigma=1 at all timepoints)}
 }
 \value{
-\strong{When mode = 1 (estimate the sample size), the following information will be outputted row by row:}
+\strong{When mode = 1 (estimate the sample size), the following information will be printed row by row:}
 
 1.Correlation matrix of the repeated outcome across time, determined by the type of correlation structure (ctype) and values of correlations (corr).
 
@@ -75,7 +75,7 @@ If ctype = 3, a vector of n-1 lag correlations is given.
 
 9.Estimated sample sizes (without attrition and with attrition) for two groups.
 
-\strong{When mode = 2 (estimate the level of power), the following information will be outputted row by row:}
+\strong{When mode = 2 (estimate the level of power), the following information will be printed row by row:}
 
 1.Correlation matrix of each subject across time, determined by the type of correlation structure (ctype) and values of correlations (corr).
 
@@ -96,6 +96,24 @@ If ctype = 3, a vector of n-1 lag correlations is given.
 9.Calculated composite mean difference and composite variances (without attrition and with attrition).
 
 10.Sample sizes (without attrition and with attrition) for two groups, determined by the number of subjects in group 1 at the first timepoint (N11), the ratio of sample sizes of group 1 to group 2 (ratio), and the attrition rates between each timepoint (attrit).
+
+rmass2 can also return a list which allows users to extract some arguments. This list contains the following components:
+
+\describe{
+\item{\code{corr.matrix}}{the correlation matrix of the repeated outcome across time}
+\item{\code{power}}{a dataframe of the inputted power level (mode = 1); a dataframe of the estimated power level without attrition and the estimated power level with attrition (mode = 2)}
+\item{\code{retention.rate}}{a vector of the retention rates across time}
+\item{\code{effect.size}}{a vector of the effect sizes across time}
+\item{\code{stand.dev}}{a vector of the standard deviations across time}
+\item{\code{contrast}}{a vector of the contrasts across time}
+\item{\code{mean.diff}}{a vector of the mean differences across time}
+\item{\code{composite.mean.diff}}{a value of the composite mean difference}
+\item{\code{composite.var}}{a dataframe of the composite variance without attrition and the composite variance with attrition}
+\item{\code{composite.effect.size}}{a dataframe of the composite effect size without attrition and the composite effect size with attrition}
+\item{\code{N11}}{a dataframe of the estimated sample size for group 1 at the first timepoint without attrition and the estimated sample size for group 1 at the first timepoint with attrition (mode = 1); a dataframe of the calculated sample size for group 1 at the first timepoint without attrition and the calculated sample size for group 1 at the first timepoint with attrition (mode = 2)}
+\item{\code{sample.size.group1}}{a dataframe of the estimated sample sizes for group 1 without attrition and the estimated sample sizes for group 1 with attrition (mode = 1); a dataframe of the calculated sample size for group 1 without attrition and the calculated sample size for group 1 with attrition (mode = 2)}
+\item{\code{sample.size.group2}}{a dataframe of the estimated sample sizes for group 2 without attrition and the estimated sample sizes for group 2 with attrition (mode = 1); a dataframe of the calculated sample size for group 1 without attrition and the calculated sample size for group 1 with attrition (mode = 2)}
+}
 }
 \description{
 RMASS2 calculates the sample size or power for a two-group repeated measures design.
@@ -110,13 +128,15 @@ For more details on estimation formulas used, please refer to Hedeker, Gibbons, 
 \examples{
 #Estimate the sample size for four timepoints.
 #Use the default values for other variables.
-rmass2(n = 4)
+#Extract the estimated sample sizes for the first group at the first timepoint.
+output <- rmass2(n = 4)
+output$N11
 #Estimate the sample size for two timepoints.
 #Set the level of power as 0.8.
 #Set the attrition rate between the 1st timepoint and the 2nd timepoint as 0.2.
 #Set the correlation between the 1st timepoint and the 2nd timepoint as 0.6.
 #Use the default values for other variables.
-rmass2(beta = 0.8, attrit = c(0.2), corr = 0.6)
+rmass2(power = 0.8, attrit = c(0.2), corr = 0.6)
 #Estimate the power level with a sample size of 60 subjects in group 1 at the 1st timepoint.
 #Set the attrition rate between the 1st timepoint and the 2nd timepoint as 0.2.
 #Use the default values for other variables.

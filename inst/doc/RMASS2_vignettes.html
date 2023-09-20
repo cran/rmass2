@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Yiheng Wei, Soumya Sahu, Donald Hedeker" />
+
+<meta name="date" content="2023-09-19" />
+
+<title>The RMASS2 Package: Repeated Measures with Attrition: Sample Sizes and Power Levels</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">The RMASS2 Package: Repeated Measures with
+Attrition: Sample Sizes and Power Levels</h1>
+<h4 class="author">Yiheng Wei<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, Soumya Sahu<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>, Donald Hedeker<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></h4>
+<h4 class="date">2023-09-19</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>The package RMASS2 utilizes a longitudinal design that accommodates
+subject attrition, enabling the estimation of sample sizes based on
+specified levels of statistical power for significance tests.
+Conversely, it can also estimate the power levels for significance tests
+based on different sample sizes set by the user. The package assumes
+that there are two independent groups, and interest is in comparing
+these groups across time in terms of a continuous normally-distributed
+dependent variable. It allows for the modification of attrition rates,
+expected group differences over time, effect sizes, and covariance
+structure, which influence the estimated sample sizes and power levels.
+In this tutorial, we will provide examples of utilizing this package to
+estimate sample sizes and power levels for two groups.</p>
+</div>
+<div id="sample-size-estimation" class="section level2">
+<h2>Sample Size Estimation</h2>
+<p>Firstly, we will demonstrate how to estimate the sample size. To
+simplify the scenario, we will use many of the default parameter
+settings, and we will consider two groups, each with two timepoints. For
+this illustration, we will assume an attrition rate of 0.2 between the
+first and second timepoints. Our objective is to attain a significance
+level (alpha level) of 0.050 and a power level of 0.900 (which are the
+default values for these) in our two-sided statistical test for these
+two groups. The following code uses a list to specify the attrition
+rates between the 1st and 2nd timepoints, and the subsequently generated
+outcome is shown below.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(rmass2)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>output <span class="ot">&lt;-</span> <span class="fu">rmass2</span>(<span class="at">attrit =</span> <span class="fu">c</span>(<span class="fl">0.2</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; correlation Matrix of Y across time</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt;  1   2   </span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt;  1   1.000   0.500   </span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt;  2   0.500   1.000   </span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; Number of Timepoints         =    2 </span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt; Alpha level              =    0.050 ( 2 - sided) </span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt; Power level (without attrition)      =    0.900 </span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; Power level (with attrition)     =    0.900 </span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; Grp1 to Grp2 Sample Size Ratio       =    1.000 </span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt; Retention rate   =   1.000   0.800   </span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co">#&gt; Effect Sizes =   0.500   0.500   </span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt; Stand. Devs. =   1.000   1.000   </span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt; Contrast =   0.707   0.707   </span></span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#&gt; Mean Diffs   =   0.500   0.500   </span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a><span class="co">#&gt; Composite Mean Difference            =    0.707107 </span></span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co">#&gt; Composite Variance (without attrition)       =    1.500000 </span></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="co">#&gt; Composite Variance (with attrition)      =    1.684017</span></span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (without attrition)    =    0.5773503 </span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (without attrition)    =    63.044538</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (with attrition)       =    0.5448937 </span></span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (with attrition)   =    70.778716</span></span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - without Attrition</span></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#&gt; Group 1  63.0    63.0    </span></span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a><span class="co">#&gt; Group 2  63.0    63.0    </span></span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - with Attrition</span></span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a><span class="co">#&gt; Group 1  70.8    56.6    </span></span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a><span class="co">#&gt; Group 2  70.8    56.6    </span></span></code></pre></div>
+<p>The first output block is the correlation matrix of the repeated
+outcome across time. This matrix is decided by the chosen correlation
+structure (referred to as “ctype”) and the correlation values (referred
+to as “corr”). By default, the correlation structure is set to 1,
+signifying an equal correlation structure. Additionally, the default
+correlation value is 0.5, representing the assumed equal correlation
+among all pairs of observations.</p>
+<p>The second output block includes the previously assumed number of
+timepoints, along with the default values for the alpha level, power
+level, and the sample size ratio between group 1 and group 2. It’s
+important to note that two power levels are provided: one without
+accounting for attrition and another considering attrition. This
+particular function is intended for power level estimation. When
+estimating sample sizes, these two power level values will be identical,
+representing the power level used for sample size calculations.</p>
+<p>In the third output block, one parameter we configure is the
+retention rate, which is derived from the attrition rate. Given that
+we’ve specified an attrition rate of 0.2 between the 1st and 2nd
+timepoints, the corresponding retention rate will be calculated as 1 -
+0.2 = 0.8 for the second timepoint.</p>
+<p>The effect sizes and standard deviations are maintained at their
+default values: a constant effect size structure with each timepoint set
+to 0.5, and a constant standard deviation for each timepoint at 1.</p>
+<p>The contrasts employed for statistical tests across time are
+dependent on the chosen effect size. If the effect size type is constant
+(estype = 0), the contrasts across time will be established as a
+constant unit vector. In cases where the effect size type is linear
+(estype = 1), the contrasts across time will be aligned with a linear
+unit vector. This specification is useful for group-by linear time
+interactions. In scenarios where a user-defined effect size type is
+selected (estype = 2), the contrasts will be uniformly set as 1 for all
+timepoints, since the user will provide the expected effect sizes at
+each timepoint. Since the effect size is the mean difference between the
+two groups, divided by the common standard deviation, the mean
+difference across time is computed by multiplying the effect size with
+the standard deviation.</p>
+<p>The following blocks will output the composite mean difference, the
+composite variances, the composite effect sizes, and estimated sample
+sizes. They are calculated by the above parameters provided. For more
+details on estimation formulas used, please refer to Hedeker, Gibbons,
+&amp; Waternaux (1999).</p>
+<p>The estimated sample sizes are presented in two scenarios: one
+without accounting for attrition, where the attrition rate between each
+pair of timepoints is presumed to be zero. In the second scenario, which
+considers attrition, the program will utilize the attrition rate values
+input by the users.</p>
+<p>The outcomes indicate that in order to attain the designated
+statistical power, it is advised to gather a minimum of 63 subjects for
+both group one and group two, assuming attrition is not taken into
+account. On the other hand, if attrition is considered, the
+recommendation is to sample at least 70.8 individuals, which should be
+rounded up to 71, for both group 1 and group 2. And due to attrition,
+only around 56.6 subjects will remain for the second timepoint.</p>
+<p>RMASS2 can also return a list which allows users to extract some
+arguments.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">str</span>(output)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; List of 13</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt;  $ corr.matrix          : num [1:2, 1:2] 1 0.5 0.5 1</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt;  $ power                :&#39;data.frame&#39;:   1 obs. of  2 variables:</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt;   ..$ without.attrit: num 0.9</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt;   ..$ with.attrit   : num 0.9</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt;  $ retention.rate       : num [1:2] 1 0.8</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt;  $ effect.size          : num [1:2] 0.5 0.5</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt;  $ stand.dev            : num [1:2] 1 1</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt;  $ contrast             : num [1:2] 0.707 0.707</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt;  $ mean.diff            : num [1:2] 0.5 0.5</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt;  $ composite.mean.diff  : num 0.707</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt;  $ composite.var        :&#39;data.frame&#39;:   1 obs. of  2 variables:</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt;   ..$ without.attrit: num 1.5</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt;   ..$ with.attrit   : num 1.68</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt;  $ composite.effect.size:&#39;data.frame&#39;:   1 obs. of  2 variables:</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt;   ..$ without.attrit: num 0.577</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt;   ..$ with.attrit   : num 0.545</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt;  $ N11                  :&#39;data.frame&#39;:   1 obs. of  2 variables:</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt;   ..$ without.attrit: num 63</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt;   ..$ with.attrit   : num 70.8</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt;  $ sample.size.group1   :&#39;data.frame&#39;:   2 obs. of  2 variables:</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt;   ..$ without.attrit: num [1:2] 63 63</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt;   ..$ with.attrit   : num [1:2] 70.8 56.6</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt;  $ sample.size.group2   :&#39;data.frame&#39;:   2 obs. of  2 variables:</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt;   ..$ without.attrit: num [1:2] 63 63</span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt;   ..$ with.attrit   : num [1:2] 70.8 56.6</span></span></code></pre></div>
+<p>For example, we can extract the estimated sample size for the first
+group at the first timepoint.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>output<span class="sc">$</span>N11</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt;   without.attrit with.attrit</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; 1       63.04454    70.77872</span></span></code></pre></div>
+<p>Please refer to the description document of this package for more
+detailed information on the arguments that can be extracted.</p>
+</div>
+<div id="power-level-estimation" class="section level2">
+<h2>Power Level Estimation</h2>
+<p>Next, we will consider how to estimate the power level. Suppose we
+intend to determine the power level corresponding to a group one size of
+100. The code to achieve this is as follows.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">rmass2</span>(<span class="at">mode =</span> <span class="dv">2</span>, <span class="at">attrit =</span> <span class="fu">c</span>(<span class="fl">0.2</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; correlation Matrix of Y across time</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;  1   2   </span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt;  1   1.000   0.500   </span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt;  2   0.500   1.000   </span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; Number of Timepoints         =    2 </span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; Alpha level              =    0.050 ( 2 - sided) </span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; Power level (without attrition)      =    0.983 </span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; Power level (with attrition)     =    0.971 </span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; Grp1 to Grp2 Sample Size Ratio       =    1.000 </span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; Retention rate   =   1.000   0.800   </span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Effect Sizes =   0.500   0.500   </span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; Stand. Devs. =   1.000   1.000   </span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; Contrast =   0.707   0.707   </span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; Mean Diffs   =   0.500   0.500   </span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; Composite Mean Difference            =    0.707107 </span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; Composite Variance (without attrition)       =    1.500000 </span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; Composite Variance (with attrition)      =    1.684017</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (without attrition)    =    0.5773503 </span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (without attrition)    =    100.000000</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (with attrition)       =    0.5448937 </span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (with attrition)   =    100.000000</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - without Attrition</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; Group 1  100.0   100.0   </span></span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; Group 2  100.0   100.0   </span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - with Attrition</span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; Group 1  100.0   80.0    </span></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; Group 2  100.0   80.0    </span></span></code></pre></div>
+<p>The output presents the computed sample sizes based on the provided
+input values for parameters “N11” (number of subjects in group 1 at the
+first timepoint), “ratio” (ratio of group sample sizes), and “attrit”
+(amount of attrition across time). The estimated power levels are
+displayed in the second output block: 0.983 when attrition is not taken
+into consideration, and 0.971 when attrition is accounted for. The
+remaining output blocks are determined using the same methodology as
+previously described.</p>
+</div>
+<div id="other-options" class="section level2">
+<h2>Other Options</h2>
+<p>In this section, we offer a tutorial on modifying the default
+settings to accommodate other scenarios.</p>
+<div id="ratio-of-group-1-to-group-2" class="section level3">
+<h3>Ratio of Group 1 to Group 2</h3>
+<p>In many instances, the ratio of group one to group two is not
+precisely one. In such cases, you can adjust the “ratio” parameter
+accordingly. To illustrate, let’s consider a scenario where the ratio of
+group one to group two is 1.1. By making this adjustment, the estimated
+sample sizes for both groups will be altered.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">rmass2</span>(<span class="at">ratio =</span> <span class="fl">1.1</span>, <span class="at">attrit =</span> <span class="fu">c</span>(<span class="fl">0.2</span>))</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; correlation Matrix of Y across time</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt;  1   2   </span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt;  1   1.000   0.500   </span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt;  2   0.500   1.000   </span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; Number of Timepoints         =    2 </span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; Alpha level              =    0.050 ( 2 - sided) </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; Power level (without attrition)      =    0.900 </span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; Power level (with attrition)     =    0.900 </span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; Grp1 to Grp2 Sample Size Ratio       =    1.100 </span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; Retention rate   =   1.000   0.800   </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; Effect Sizes =   0.500   0.500   </span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; Stand. Devs. =   1.000   1.000   </span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt; Contrast =   0.707   0.707   </span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; Mean Diffs   =   0.500   0.500   </span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; Composite Mean Difference            =    0.707107 </span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; Composite Variance (without attrition)       =    1.500000 </span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt; Composite Variance (with attrition)      =    1.684017</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (without attrition)    =    0.5773503 </span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (without attrition)    =    66.196765</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (with attrition)       =    0.5448937 </span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (with attrition)   =    74.317652</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - without Attrition</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt; Group 1  66.2    66.2    </span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; Group 2  60.2    60.2    </span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - with Attrition</span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt; Group 1  74.3    59.5    </span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a><span class="co">#&gt; Group 2  67.6    54.0    </span></span></code></pre></div>
+</div>
+<div id="correlation-structure-across-time" class="section level3">
+<h3>Correlation Structure across Time</h3>
+<p>Within the program, users have access to three correlation structure
+options across time: equal correlations for all pairs of timepoints, AR1
+structure, or a toeplitz (banded) correlation matrix. To tailor the
+correlation structure, the “ctype” parameter can be adjusted.
+Additionally, the “corr” parameter can be utilized to specify
+correlation value(s). For equal, this would be the value of all pairwise
+correlations. For AR1, this would be the correlation for the first lag
+in the correlation matrix. For toeplitz, this would be the values of the
+correlation for each lag. Here’s an example demonstrating how to
+configure a toeplitz structure with 4 timepoints and lagged correlations
+of 0.8, 0.5, and 0.5. We also specify attrition rates of 0.2 (between
+timepoints 1 and 2), 0.1 (between timepoints 2 and 3), and 0.1 (between
+timepoints 3 and 4). With these specifications, the package returns the
+estimated sample sizes.</p>
+<p>Notice that without attrition, one would only need 62 subjects per
+group, however with the posited attrition rates, 80 subjects per group
+would be necessary at the first timepoint.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">rmass2</span>(<span class="at">n =</span> <span class="dv">4</span>, <span class="at">attrit =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>), <span class="at">ctype =</span> <span class="dv">3</span>, <span class="at">corr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; correlation Matrix of Y across time</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;  1   2   3   4   </span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;  1   1.000   0.800   0.500   0.500   </span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt;  2   0.800   1.000   0.800   0.500   </span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt;  3   0.500   0.800   1.000   0.800   </span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt;  4   0.500   0.500   0.800   1.000   </span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; Number of Timepoints         =    4 </span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; Alpha level              =    0.050 ( 2 - sided) </span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; Power level (without attrition)      =    0.900 </span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; Power level (with attrition)     =    0.900 </span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; Grp1 to Grp2 Sample Size Ratio       =    1.000 </span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; Retention rate   =   1.000   0.800   0.720   0.648   </span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; Effect Sizes =   0.500   0.500   0.500   0.500   </span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; Stand. Devs. =   1.000   1.000   1.000   1.000   </span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; Contrast =   0.500   0.500   0.500   0.500   </span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; Mean Diffs   =   0.500   0.500   0.500   0.500   </span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; Composite Mean Difference            =    1.000000 </span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; Composite Variance (without attrition)       =    2.950000 </span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; Composite Variance (with attrition)      =    3.807807</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (without attrition)    =    0.5822225 </span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (without attrition)    =    61.993796</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (with attrition)       =    0.5124631 </span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (with attrition)   =    80.020469</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - without Attrition</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; Group 1  62.0    62.0    62.0    62.0    </span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; Group 2  62.0    62.0    62.0    62.0    </span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - with Attrition</span></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="co">#&gt; Group 1  80.0    64.0    57.6    51.9    </span></span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a><span class="co">#&gt; Group 2  80.0    64.0    57.6    51.9    </span></span></code></pre></div>
+</div>
+<div id="heterogeneity" class="section level3">
+<h3>Heterogeneity</h3>
+<p>By default, our program assumes consistent standard deviations across
+different timepoints, setting them to a value of 1. However, it could be
+that the standard deviations change across time, which is known as the
+heterogeneous case. To address this, users can adjust the “sigma”
+parameter accordingly. Here’s an example that illustrates how to
+implement this in practice for a two timepoint situation.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">rmass2</span>(<span class="at">attrit =</span> <span class="fu">c</span>(<span class="fl">0.2</span>), <span class="at">sigma =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; correlation Matrix of Y across time</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt;  1   2   </span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt;  1   1.000   0.500   </span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;  2   0.500   1.000   </span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; Number of Timepoints         =    2 </span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; Alpha level              =    0.050 ( 2 - sided) </span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; Power level (without attrition)      =    0.900 </span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; Power level (with attrition)     =    0.900 </span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Grp1 to Grp2 Sample Size Ratio       =    1.000 </span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; Retention rate   =   1.000   0.800   </span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; Effect Sizes =   0.500   0.500   </span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; Stand. Devs. =   1.000   1.414   </span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; Contrast =   0.707   0.707   </span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; Mean Diffs   =   0.500   0.707   </span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; Composite Mean Difference            =    0.853553 </span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; Composite Variance (without attrition)       =    2.207107 </span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt; Composite Variance (with attrition)      =    2.540569</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (without attrition)    =    0.5745383 </span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (without attrition)    =    63.663158</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (with attrition)       =    0.535507 </span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (with attrition)   =    73.281761</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - without Attrition</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt; Group 1  63.7    63.7    </span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; Group 2  63.7    63.7    </span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - with Attrition</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt; Group 1  73.3    58.6    </span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; Group 2  73.3    58.6    </span></span></code></pre></div>
+</div>
+<div id="effect-sizes-across-time" class="section level3">
+<h3>Effect Sizes across Time</h3>
+<p>As mentioned, effect sizes are computed as the mean difference
+divided by a common standard deviation. Our program furnishes three
+effect size structure options: constant, linear, and user-defined. To
+modify the effect size structure, users can manipulate the “estype”
+parameter, and to assign numerical values, the “es” parameter can be
+employed. Here’s an example illustrating the process of configuring
+linear effect sizes, with a value of 0.5 designated for the last
+timepoint (effect size starts at 0 and linearly changes to 0.5 across
+the 4 timepoints).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">rmass2</span>(<span class="at">n =</span> <span class="dv">4</span>, <span class="at">attrit =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>), <span class="at">estype =</span> <span class="dv">1</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; correlation Matrix of Y across time</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt;  1   2   3   4   </span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt;  1   1.000   0.500   0.500   0.500   </span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt;  2   0.500   1.000   0.500   0.500   </span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt;  3   0.500   0.500   1.000   0.500   </span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt;  4   0.500   0.500   0.500   1.000   </span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; Number of Timepoints         =    4 </span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; Alpha level              =    0.050 ( 2 - sided) </span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; Power level (without attrition)      =    0.900 </span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; Power level (with attrition)     =    0.900 </span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; Grp1 to Grp2 Sample Size Ratio       =    1.000 </span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; Retention rate   =   1.000   0.800   0.720   0.648   </span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; Effect Sizes =   0.000   0.167   0.333   0.500   </span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; Stand. Devs. =   1.000   1.000   1.000   1.000   </span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; Contrast =   -0.671  -0.224  0.224   0.671   </span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; Mean Diffs   =   0.000   0.167   0.333   0.500   </span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; Composite Mean Difference            =    0.372678 </span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; Composite Variance (without attrition)       =    0.500000 </span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; Composite Variance (with attrition)      =    0.653689</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (without attrition)    =    0.5270463 </span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (without attrition)    =    75.653446</span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt; Composite Effect size (with attrition)       =    0.4609441 </span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="co">#&gt; N Subj for Grp1 at Time 1 (with attrition)   =    98.907620</span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - without Attrition</span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; Group 1  75.7    75.7    75.7    75.7    </span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; Group 2  75.7    75.7    75.7    75.7    </span></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; Sample Sizes by Group across Time - with Attrition</span></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co">#&gt; Group 1  98.9    79.1    71.2    64.1    </span></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="co">#&gt; Group 2  98.9    79.1    71.2    64.1    </span></span></code></pre></div>
+</div>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>D. Hedeker, R. D. Gibbons, and C. Waternaux. Sample size estimation
+for longitu- dinal designs with attrition: comparing time-related
+contrasts between two groups. <em>Journal of Educational and Behavioral
+Statistics</em>, 24(1):70–93, 1999.</p>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>Committee on Computational and Applied Mathematics,
+University of Chicago<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>School of Public Health, University of Illinois
+Chicago<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>Department of Public Health Sciences, University of
+Chicago<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

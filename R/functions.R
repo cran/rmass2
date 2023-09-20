@@ -120,18 +120,18 @@ cal_sigma.rc <- function(corr_matrix, sigma, r, c) {
 }
 
 #calculate the quantile corresponding to the level of power
-#z.beta.wo: power without attrition
-#z.beta.w: power with attrition
-cal_beta <- function(mode, beta, N11, ratio, phi.c, sigma.rc, z.alpha) {
+#z.power.wo: power without attrition
+#z.power.w: power with attrition
+cal_power <- function(mode, power, N11, ratio, phi.c, sigma.rc, z.alpha) {
   if (mode == 1){
-    z.beta.wo <- qnorm(beta)
-    z.beta.w <- qnorm(beta)
+    z.power.wo <- qnorm(power)
+    z.power.w <- qnorm(power)
   }
   else{
-    z.beta.wo <- sqrt(N11/(ratio + 1)*(phi.c**2/sigma.rc[1])) - z.alpha
-    z.beta.w <- sqrt(N11/(ratio + 1)*(phi.c**2/sigma.rc[2])) - z.alpha
+    z.power.wo <- sqrt(N11/(ratio + 1)*(phi.c**2/sigma.rc[1])) - z.alpha
+    z.power.w <- sqrt(N11/(ratio + 1)*(phi.c**2/sigma.rc[2])) - z.alpha
   }
-  c(z.beta.wo, z.beta.w)
+  c(z.power.wo, z.power.w)
 }
 
 #caculate the sample size
@@ -139,16 +139,16 @@ cal_beta <- function(mode, beta, N11, ratio, phi.c, sigma.rc, z.alpha) {
 #n2.wo: the sample size of group two without attrition
 #n1.w: the sample size of group one with attrition
 #n2.w: the sample size of group two with attrition
-cal_N <- function(mode, n, ratio, z.alpha, z.beta, sigma.rc, phi.c, r, N11) {
+cal_N <- function(mode, n, ratio, z.alpha, z.power, sigma.rc, phi.c, r, N11) {
   if (mode == 1){
     sigma.rc.wo <- sigma.rc[1]
     sigma.rc.w <- sigma.rc[2]
-    z.beta <- z.beta[1]
+    z.power <- z.power[1]
 
     n1.wo <- NULL
     for (j in 1:n) {
       if (j == 1) {
-        n1.wo[j] <- (ratio + 1) * (z.alpha + z.beta) ** 2 * sigma.rc.wo / phi.c **
+        n1.wo[j] <- (ratio + 1) * (z.alpha + z.power) ** 2 * sigma.rc.wo / phi.c **
           2
       }
       else{
@@ -160,7 +160,7 @@ cal_N <- function(mode, n, ratio, z.alpha, z.beta, sigma.rc, phi.c, r, N11) {
     n1.w <- NULL
     for (j in 1:n) {
       if (j == 1) {
-        n1.w[j] <- (ratio + 1) * (z.alpha + z.beta) ** 2 * sigma.rc.w / phi.c **
+        n1.w[j] <- (ratio + 1) * (z.alpha + z.power) ** 2 * sigma.rc.w / phi.c **
           2
       }
       else{
@@ -191,7 +191,7 @@ print_result <-
            n,
            alpha,
            nside,
-           z.beta,
+           z.power,
            ratio,
            r,
            dmean,
@@ -227,8 +227,8 @@ print_result <-
         nside,
         '- sided)',
         '\n')
-    cat('Power level (without attrition)\t\t=\t', sprintf('%0.3f', pnorm(z.beta[1])), '\n')
-    cat('Power level (with attrition)\t\t=\t', sprintf('%0.3f', pnorm(z.beta[2])), '\n')
+    cat('Power level (without attrition)\t\t=\t', sprintf('%0.3f', pnorm(z.power[1])), '\n')
+    cat('Power level (with attrition)\t\t=\t', sprintf('%0.3f', pnorm(z.power[2])), '\n')
     cat('Grp1 to Grp2 Sample Size Ratio\t\t=\t',
         sprintf('%0.3f', ratio),
         '\n')
@@ -306,6 +306,31 @@ print_result <-
     cat('\nGroup 2\t')
     for (j in 1:n)
       cat(sprintf('%0.1f', n2.w[j]), '\t')
+    
+    #output
+    output <- list(
+      corr.matrix = corr_matrix,
+      power =  data.frame(without.attrit = pnorm(z.power[1]),
+                          with.attrit = pnorm(z.power[2])),
+      retention.rate = r,
+      effect.size = es_list,
+      stand.dev = sqrt(sigma),
+      contrast = c,
+      mean.diff = dmean,
+      composite.mean.diff = phi.c,
+      composite.var = data.frame(without.attrit = sigma.rc.wo,
+                                 with.attrit = sigma.rc.w),
+      composite.effect.size = data.frame(without.attrit = sqrt(phi.c ** 2 / sigma.rc.wo),
+                                         with.attrit = sqrt(phi.c ** 2 / sigma.rc.w)),
+      N11 = data.frame(without.attrit = n1.wo[1],
+                       with.attrit = n1.w[1]),
+      sample.size.group1 = data.frame(without.attrit = n1.wo,
+                                      with.attrit = n1.w),
+      sample.size.group2 = data.frame(without.attrit = n2.wo,
+                                      with.attrit = n2.w))
+    
+    #return
+    invisible(output)
   }
 
 is_numeric <- function(x) {
